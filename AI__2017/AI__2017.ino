@@ -66,7 +66,7 @@
 
 //Change Direction Step
 #define TURN_COLLISION		1
-#define TURN_STEP        	3
+#define TURN_STEP        	2
 #define MOVE_BACK_STEP		9
 
 //Loop step
