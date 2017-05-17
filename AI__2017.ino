@@ -39,17 +39,17 @@
 #define SS_D1_PIN 			3
 
 //Speed limit
-#define MAX_SPEED     		200
-#define MID_SPEED     		160
-#define LOW_SPEED     		140
-#define MIN_SPEED     		100
+#define MAX_SPEED     		200 //200
+#define MID_SPEED     		160 //160
+#define LOW_SPEED     		140 //140
+#define MIN_SPEED     		100 //100
 
 
 //Collision Distance
 #define EX_LOW_DISTANCE 	10
 #define LOWER_DISTANCE     	18 //18
 #define LOW_DISTANCE 		25
-#define MED_DISTANCE 		38 //60
+#define MED_DISTANCE 		60 //60
 #define HIGH_DISTANCE 		100
 
 
@@ -82,7 +82,7 @@
 #define HAVE_COLLISION(x, d)  (x < d)
 
 //Balance
-#define BALANCE_RATIO 0.15
+#define BALANCE_RATIO 0.15 //
 
 //// BLUETOOTH DEVICE.
 #define   BLT_RX_PIN                13
@@ -91,7 +91,7 @@ BluetoothDevice                     blueDevice;
 String DIR_LOG = "";
 int distanceSensorLeft, distanceSensorRight, distanceSensorCenter, speedSensorLeft, speedSensorRight;
 int speedMT1, speedMT2;
-int timer, direction, nextDirection, changeDirectionStep;
+int timer, direction, nextDirection, prevDirection, changeDirectionStep;
 int turn, delaystep, countdir = 0;
 SharpIR irLeft(IR_PIN_LEFT, MODEL_IR);
 SharpIR irRight(IR_PIN_RIGHT, MODEL_IR);
@@ -103,7 +103,7 @@ void setup()
   Serial.begin(9600);
 
   // Setup Debug With Bluetooth.
-  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
+  //  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
 
   //Setup distance sensor
   SetupDistanceSensor();
@@ -142,24 +142,26 @@ void loop()
   distanceSensorRight = irRight.distance();
   distanceSensorCenter = GetDistanceForSensorUltraonic(DS_TRIGGER_3_PIN, DS_ECHO_3_PIN);
 
+  if (distanceSensorLeft == 0)
+  {
+    distanceSensorLeft = HIGH_DISTANCE;
+  }
+  if (distanceSensorRight == 0)
+  {
+    distanceSensorRight = HIGH_DISTANCE;
+  }
+
   switch (direction)
   {
     case DIR_12:
       countdir ++;
-     
-      if (HAVE_COLLISION(distanceSensorCenter, 10))
-      {
-          direction = STOP;
-          nextDirection = DIR_6; // turn back
-          turn = MOVE_BACK_STEP;
-      }
-      else if (HAVE_COLLISION(distanceSensorCenter, LOW_DISTANCE))
+
+      if (HAVE_COLLISION(distanceSensorCenter, LOW_DISTANCE))
       {
         speedMT1 = MIN_SPEED;
         speedMT2 = MIN_SPEED;
 
-     //   if (HAVE_COLLISION(distanceSensorLeft, LOWER_DISTANCE) && HAVE_COLLISION(distanceSensorRight, LOWER_DISTANCE))
-         if (HAVE_COLLISION(distanceSensorLeft, 15) && HAVE_COLLISION(distanceSensorRight, 15))
+        if (HAVE_COLLISION(distanceSensorLeft, LOWER_DISTANCE) && HAVE_COLLISION(distanceSensorRight, LOWER_DISTANCE))
         {
           direction = STOP;
           nextDirection = DIR_6; // turn back
@@ -184,7 +186,7 @@ void loop()
         if (speedMT1 > LOW_SPEED || speedMT2 > LOW_SPEED)
         {
           speedMT1 = (1 - 0.2) * speedMT1;
-          speedMT2 = (1 - 0.2) * speedMT2;
+          speedMT2 = speedMT1;
         }
 
       }
@@ -196,8 +198,10 @@ void loop()
 
       if (HAVE_COLLISION(distanceSensorLeft, LOWER_DISTANCE) && !HAVE_COLLISION(distanceSensorRight, EX_LOW_DISTANCE ) )
       {
-        if (HAVE_COLLISION(distanceSensorLeft, LOWER_DISTANCE) )
+        //if (HAVE_COLLISION(distanceSensorLeft, LOWER_DISTANCE) )
         {
+          speedMT1 = MID_SPEED;
+          speedMT2 = MID_SPEED;
           direction = DIR_2; // turn right ( i guess)
           turn = TURN_COLLISION;
         }
@@ -205,11 +209,28 @@ void loop()
 
       if (HAVE_COLLISION(distanceSensorRight, LOWER_DISTANCE) && !HAVE_COLLISION(distanceSensorLeft, EX_LOW_DISTANCE ) )
       {
-        if (HAVE_COLLISION(distanceSensorRight, LOWER_DISTANCE) )
+        // if (HAVE_COLLISION(distanceSensorRight, LOWER_DISTANCE) )
         {
+          speedMT1 = MID_SPEED;
+          speedMT2 = MID_SPEED;
           direction = DIR_10; // turn left ( i guess)
           turn = TURN_COLLISION;
         }
+      }
+
+      if(distanceSensorLeft > LOW_DISTANCE && distanceSensorRight > LOW_DISTANCE)
+      {
+        if(distanceSensorLeft > distanceSensorRight)
+        {
+           direction = DIR_2; // turn right ( i guess)
+          turn = TURN_STEP;
+        }
+        else
+        {
+           direction = DIR_10; // turn right ( i guess)
+          turn = TURN_STEP;
+        }
+
       }
       break;
 
@@ -238,7 +259,7 @@ void loop()
       speedMT2 = MID_SPEED;
 
       changeDirectionStep++;
-      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, MED_DISTANCE)))
+      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, 50)))
       {
         DIR_LOG = "DIR_2";
 
@@ -271,7 +292,7 @@ void loop()
       speedMT2 = MID_SPEED;
 
       changeDirectionStep++;
-      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, MED_DISTANCE)))
+      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, 50)))
       {
         DIR_LOG = "DIR_10";
 
@@ -308,26 +329,26 @@ void loop()
       }
       break;
   }
-
-  speedBalance(speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight, 0);
-  RunCar(direction, speedMT1, speedMT2);
-  String temp = "ML:";
-  temp += speedMT1;
-  temp += " :";
-  temp += "MR:";
-  temp += speedMT2;
-  temp += ": ";
-  temp += "SSL:";
-  temp += distanceSensorLeft;
-  temp += ": ";
-  temp += "SSR:";
-  temp += distanceSensorRight;
-  temp += ": ";
-  temp += "SSH:";
-  temp += distanceSensorCenter;
-  temp += ": ";
-  temp += direction;
-  blueDevice.SentToBluetoothDevice(temp);
+  prevDirection = direction;
+  speedBalance(direction, speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight, 0);
+  RunCar(direction, speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight);
+  //  String temp = "ML:";
+  //  temp += speedMT1;
+  //  temp += " :";
+  //  temp += "MR:";
+  //  temp += speedMT2;
+  //  temp += ": ";
+  //  temp += "SSL:";
+  //  temp += distanceSensorLeft;
+  //  temp += ": ";
+  //  temp += "SSR:";
+  //  temp += distanceSensorRight;
+  //  temp += ": ";
+  //  temp += "SSH:";
+  //  temp += distanceSensorCenter;
+  //  temp += ": ";
+  //  temp += direction;
+  //  blueDevice.SentToBluetoothDevice(temp);
   delay(TIME_STEP);
   if (timer % 10 == 0)
   {
@@ -340,7 +361,7 @@ void loop()
   }
 }
 
-void RunCar(int dir, int speedM1, int speedM2)
+void RunCar(int dir, int speedM1, int speedM2, int distanceSensorL, int distanceSensorR)
 {
   if (dir == DIR_12) // move ahead
   {
@@ -369,8 +390,22 @@ void RunCar(int dir, int speedM1, int speedM2)
   }
   if (dir == DIR_6)
   {
+    //    if (HAVE_COLLISION(distanceSensorL, EX_LOW_DISTANCE))
+    //    {
+    //      RunMotor(0, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
+    //      RunMotor(-1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+    //    }
+    //
+    //    else if (HAVE_COLLISION(distanceSensorR, EX_LOW_DISTANCE))
+    //    {
+    //      RunMotor(-1, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
+    //      RunMotor(0, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+    //    }
+    //    else
+    //    {
     RunMotor(0, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
     RunMotor(0, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+    //    }
   }
   if (dir == STOP)
   {
@@ -379,26 +414,77 @@ void RunCar(int dir, int speedM1, int speedM2)
   }
 }
 
-void speedBalance(int &speed1, int &speed2, long distance1, long distance2, long delta)
+void speedBalance(int dir, int &speed1, int &speed2, long distance1, long distance2, long delta)
 {
   float ratio = BALANCE_RATIO;
-
-  if (distance1 > distance2 + delta)
+  //delta = EX_LOW_DISTANCE; // test
+  if (distance1  > MED_DISTANCE && distance2 > MED_DISTANCE)
   {
-    if (speed1 * (1 + ratio) <= 255)
-      speed1 = speed1 * (1 + ratio);
+    //Do no thing
+
+  }
+  else if (distance1 > distance2 + delta)
+  {
+    if (dir == STOP)
+    {
+      if (speed2 * (1 + ratio) <= 255)
+        speed2 = speed2 * (1 + ratio);
+      else
+        speed1 = speed1 * (1 - ratio);
+
+      if (speed1 < MIN_SPEED || speed2 < MIN_SPEED)
+      {
+        speed1 = LOW_SPEED;
+        speed2 = LOW_SPEED * (1 + ratio);
+
+      }
+    }
     else
-      speed2 = speed2 * (1 - ratio);
+    {
+      if (speed1 * (1 + ratio) <= 255)
+        speed1 = speed1 * (1 + ratio);
+      else
+        speed2 = speed2 * (1 - ratio);
+
+      if (speed1 < MIN_SPEED || speed2 < MIN_SPEED)
+      {
+        speed1 = LOW_SPEED * (1 + ratio);
+        speed2 = LOW_SPEED;
+      }
+    }
   }
   else if (distance1 < distance2 + delta)
   {
-    if (speed2 * (1 + ratio) <= 255)
-      speed2 = speed2 * (1 + ratio);
+    if (dir == STOP)
+    {
+      if (speed1 * (1 + ratio) <= 255)
+        speed1 = speed1 * (1 + ratio);
+      else
+        speed2 = speed2 * (1 - ratio);
+
+      if (speed1 < MIN_SPEED || speed2 < MIN_SPEED)
+      {
+        speed1 = LOW_SPEED * (1 + ratio);
+        speed2 = LOW_SPEED;
+      }
+
+    }
     else
-      speed1 = speed1 * (1 - ratio);
+    {
+      if (speed2 * (1 + ratio) <= 255)
+        speed2 = speed2 * (1 + ratio);
+      else
+        speed1 = speed1 * (1 - ratio);
+
+      if (speed1 < MIN_SPEED || speed2 < MIN_SPEED)
+      {
+        speed1 = LOW_SPEED;
+        speed2 = LOW_SPEED * (1 + ratio);
+
+      }
+    }
   }
 }
-
 void SetupSpeedSensor(int stop)
 {
   if (stop == 1)
@@ -507,3 +593,4 @@ long microsecondsToCentimeters(long microseconds)
   // object we take half of the distance travelled.
   return microseconds / 29 / 2;
 }
+
