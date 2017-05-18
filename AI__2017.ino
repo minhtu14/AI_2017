@@ -103,7 +103,7 @@ void setup()
   Serial.begin(9600);
 
   // Setup Debug With Bluetooth.
-  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
+  //  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
 
   //Setup distance sensor
   SetupDistanceSensor();
@@ -218,16 +218,16 @@ void loop()
         }
       }
 
-      if (distanceSensorLeft > LOW_DISTANCE && distanceSensorRight > LOW_DISTANCE)
+      if(distanceSensorLeft > LOW_DISTANCE && distanceSensorRight > LOW_DISTANCE)
       {
-        if (distanceSensorLeft > distanceSensorRight)
+        if(distanceSensorLeft > distanceSensorRight)
         {
-          direction = DIR_10; // turn right ( i guess)
+           direction = DIR_2; // turn right ( i guess)
           turn = TURN_STEP;
         }
         else
         {
-          direction = DIR_2; // turn right ( i guess)
+           direction = DIR_10; // turn right ( i guess)
           turn = TURN_STEP;
         }
 
@@ -255,12 +255,8 @@ void loop()
       break;
 
     case DIR_2:
-      //      speedMT1 = MID_SPEED;
-      //      speedMT2 = MID_SPEED;
-      if (speedMT1 > speedMT2)
-        speedMT2 = speedMT1;
-      else
-        speedMT1 = speedMT2;
+      speedMT1 = MID_SPEED;
+      speedMT2 = MID_SPEED;
 
       changeDirectionStep++;
       if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, 50)))
@@ -292,12 +288,9 @@ void loop()
 
 
     case DIR_10:
-      //      speedMT1 = MID_SPEED;
-      //      speedMT2 = MID_SPEED;
-      if (speedMT1 > speedMT2)
-        speedMT2 = speedMT1;
-      else
-        speedMT1 = speedMT2;
+      speedMT1 = MID_SPEED;
+      speedMT2 = MID_SPEED;
+
       changeDirectionStep++;
       if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, 50)))
       {
@@ -339,23 +332,23 @@ void loop()
   prevDirection = direction;
   speedBalance(direction, speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight, 0);
   RunCar(direction, speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight);
-  String temp = "ML:";
-  temp += speedMT1;
-  temp += " :";
-  temp += "MR:";
-  temp += speedMT2;
-  temp += ": ";
-  temp += "SSL:";
-  temp += distanceSensorLeft;
-  temp += ": ";
-  temp += "SSR:";
-  temp += distanceSensorRight;
-  temp += ": ";
-  temp += "SSH:";
-  temp += distanceSensorCenter;
-  temp += ": ";
-  temp += direction;
-  blueDevice.SentToBluetoothDevice(temp);
+  //  String temp = "ML:";
+  //  temp += speedMT1;
+  //  temp += " :";
+  //  temp += "MR:";
+  //  temp += speedMT2;
+  //  temp += ": ";
+  //  temp += "SSL:";
+  //  temp += distanceSensorLeft;
+  //  temp += ": ";
+  //  temp += "SSR:";
+  //  temp += distanceSensorRight;
+  //  temp += ": ";
+  //  temp += "SSH:";
+  //  temp += distanceSensorCenter;
+  //  temp += ": ";
+  //  temp += direction;
+  //  blueDevice.SentToBluetoothDevice(temp);
   delay(TIME_STEP);
   if (timer % 10 == 0)
   {
