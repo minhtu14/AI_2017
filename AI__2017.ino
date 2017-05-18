@@ -96,10 +96,6 @@ int turn, delaystep, countdir = 0;
 SharpIR irLeft(IR_PIN_LEFT, MODEL_IR);
 SharpIR irRight(IR_PIN_RIGHT, MODEL_IR);
 
-// var temp using for go out of loop
-bool canTurnRight = true;
-bool canTurnLeft = true;
-
 // put your setup code here, to run once:
 void setup()
 {
@@ -226,21 +222,13 @@ void loop()
       {
         if (distanceSensorLeft > distanceSensorRight)
         {
-          if (distanceSensorLeft > MED_DISTANCE && canTurnLeft)  // wait 10 loop to can turn after that
-          {
-            direction = DIR_10; // turn right ( i guess)
-            turn = TURN_STEP;
-            canTurnLeft = false;
-          }
+          direction = DIR_10; // turn right ( i guess)
+          turn = TURN_STEP;
         }
         else
         {
-          if (distanceSensorRight > MED_DISTANCE && canTurnRight) // wait 10 loop to can turn after that
-          {
-            direction = DIR_2; // turn right ( i guess)
-            turn = TURN_STEP;
-            canTurnRight = false;  
-          }
+          direction = DIR_2; // turn right ( i guess)
+          turn = TURN_STEP;
         }
 
       }
@@ -377,12 +365,6 @@ void loop()
   if (++timer == 1000)
   {
     timer = 0;
-  }
-  
-  if (timer % 10 == 0)
-  {
-     canTurnLeft = true;
-     canTurnRight = true;
   }
 }
 
