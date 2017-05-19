@@ -81,10 +81,13 @@
 #define DISTANCE_MAX 500
 int distanceSensorLeft, distanceSensorRight, distanceSensorCenter, speedSensorLeft, speedSensorRight;
 
+//// BLUETOOTH DEVICE.
+#define   BLT_RX_PIN                13
+#define   BLT_TX_PIN                12
 int speedMT1, speedMT2;
 int timer, direction, nextDirection, changeDirectionStep;
 int turn, delaystep, countdir = 0;
-
+BluetoothDevice                     blueDevice;
 SharpIR irLeft(IR_PIN_LEFT, MODEL_IR);
 SharpIR irRight(IR_PIN_RIGHT, MODEL_IR);
 bool isturnback = false;
@@ -110,6 +113,9 @@ void setup()
 
   //Setup debug LED
   SetupLED();
+
+  // Setup Debug With Bluetooth.
+  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
 
   //setup timer
   timer = 0;
@@ -374,6 +380,24 @@ void loop()
 
   Serial.print("isturnback: ");
   Serial.print(isturnback);
+
+  String temp = "ML:";
+  temp += speedMT1;
+  temp += " :";
+  temp += "MR:";
+  temp += speedMT2;
+  temp += ": ";
+  temp += "SSL:";
+  temp += distanceSensor1;
+  temp += ": ";
+  temp += "SSR:";
+  temp += distanceSensor2;
+  temp += ": ";
+  temp += "SSH:";
+  temp += distanceSensor3;
+  temp += ": ";
+  temp += direction;
+  blueDevice.SentToBluetoothDevice(temp);
 
   timer++;
   if (timer == 10000) timer = 0;
