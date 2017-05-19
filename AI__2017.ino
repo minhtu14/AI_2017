@@ -388,13 +388,13 @@ void loop()
   temp += speedMT2;
   temp += ": ";
   temp += "SSL:";
-  temp += distanceSensor1;
+  temp += distanceSensorLeft;
   temp += ": ";
   temp += "SSR:";
-  temp += distanceSensor2;
+  temp += distanceSensorRight;
   temp += ": ";
   temp += "SSH:";
-  temp += distanceSensor3;
+  temp += distanceSensorCenter;
   temp += ": ";
   temp += direction;
   blueDevice.SentToBluetoothDevice(temp);
