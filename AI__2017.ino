@@ -24,14 +24,14 @@
 
 //Motor LEFT
 #define MOT_ENABLE_1_PIN  5
-#define MOT_IN_1_PIN    8
-#define MOT_IN_2_PIN    7
+#define MOT_IN_1_PIN    7
+#define MOT_IN_2_PIN    8
 
 
 //Motor RIGHT
 #define MOT_ENABLE_2_PIN  6
-#define MOT_IN_3_PIN    11
-#define MOT_IN_4_PIN    10
+#define MOT_IN_3_PIN    10
+#define MOT_IN_4_PIN    11
 
 
 //Speed Sensor
@@ -79,16 +79,12 @@
 //Balance
 #define BALANCE_RATIO 0.15
 #define DISTANCE_MAX 500
-
-//// BLUETOOTH DEVICE.
-#define   BLT_RX_PIN                13
-#define   BLT_TX_PIN                12
 int distanceSensorLeft, distanceSensorRight, distanceSensorCenter, speedSensorLeft, speedSensorRight;
-int distanceSensor1, distanceSensor2, distanceSensor3, speedSensor1, speedSensor2;
+
 int speedMT1, speedMT2;
 int timer, direction, nextDirection, changeDirectionStep;
 int turn, delaystep, countdir = 0;
-BluetoothDevice                     blueDevice;
+
 SharpIR irLeft(IR_PIN_LEFT, MODEL_IR);
 SharpIR irRight(IR_PIN_RIGHT, MODEL_IR);
 bool isturnback = false;
@@ -110,13 +106,10 @@ void setup()
   SetupMotor();
 
   //Setup speed sensor
-  SetupSpeedSensor();
+  //SetupSpeedSensor();
 
   //Setup debug LED
   SetupLED();
-
-  // Setup Debug With Bluetooth.
-  blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
 
   //setup timer
   timer = 0;
@@ -138,18 +131,18 @@ void setup()
 void loop()
 {
   // put your main code here, to run repeatedly:
-  distanceSensor1 = irLeft.distance();
-  distanceSensor2 = irRight.distance();
-  distanceSensor3 = GetDistanceForSensorUltraonic(DS_TRIGGER_3_PIN, DS_ECHO_3_PIN);
+  distanceSensorLeft = irLeft.distance();
+  distanceSensorRight = irRight.distance();
+  distanceSensorCenter = GetDistanceForSensorUltraonic(DS_TRIGGER_3_PIN, DS_ECHO_3_PIN);
 
-  if (distanceSensor1 == 0)
-    distanceSensor1 = DISTANCE_MAX;
+  if (distanceSensorLeft == 0)
+    distanceSensorLeft = DISTANCE_MAX;
 
-  if (distanceSensor2 == 0)
-    distanceSensor2 = DISTANCE_MAX;
+  if (distanceSensorRight == 0)
+    distanceSensorRight = DISTANCE_MAX;
 
-  if (distanceSensor3 == 0)
-    distanceSensor3 = DISTANCE_MAX;
+  if (distanceSensorCenter == 0)
+    distanceSensorCenter = DISTANCE_MAX;
 
   if (timer % 3 == 0)
   {
@@ -158,11 +151,11 @@ void loop()
     Serial.print(" - Dir: ");
     Serial.print(direction);
     Serial.print(" - DS1: ");
-    Serial.print(distanceSensor1);
+    Serial.print(distanceSensorLeft);
     Serial.print(" - DS2: ");
-    Serial.print(distanceSensor2);
+    Serial.print(distanceSensorRight);
     Serial.print(" - DS3: ");
-    Serial.print(distanceSensor3);
+    Serial.print(distanceSensorCenter);
     Serial.println();
   }
 
@@ -171,7 +164,7 @@ void loop()
     case DIR_12:
       countdir ++;
 
-      if (HAVE_COLLISION(distanceSensor3, LOW_DISTANCE))
+      if (HAVE_COLLISION(distanceSensorCenter, LOW_DISTANCE))
       {
         speedMT1 = MIN_SPEED;
         speedMT2 = MIN_SPEED;
@@ -188,23 +181,23 @@ void loop()
         }
         else
         {
-          if (distanceSensor1 > distanceSensor2)
+          if (distanceSensorLeft > distanceSensorRight)
           {
             direction = DIR_10;
-            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensor2 < LOWER_DISTANCE) ? TURN_COLLISION : 0);
+            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorRight < LOWER_DISTANCE) ? TURN_COLLISION : 0);
             isturnback = false;
           }
           else
           {
             direction = DIR_2;
-            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensor1 < LOWER_DISTANCE) ? TURN_COLLISION : 0);
+            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorLeft < LOWER_DISTANCE) ? TURN_COLLISION : 0);
             isturnback = false;
           }
         }
       }
       else
       {
-        if (HAVE_COLLISION(distanceSensor3, MED_DISTANCE))
+        if (HAVE_COLLISION(distanceSensorCenter, MED_DISTANCE))
         {
           if (speedMT1 > LOW_SPEED || speedMT2 > LOW_SPEED)
           {
@@ -220,7 +213,7 @@ void loop()
 
         if (isfollowall)
         {
-          int sensorCheck = isfollowright ? distanceSensor2 : distanceSensor1;
+          int sensorCheck = isfollowright ? distanceSensorRight : distanceSensorLeft;
 
           if (sensorCheck > 32)
           {
@@ -240,14 +233,14 @@ void loop()
         }
         else
         {
-          if (HAVE_COLLISION(distanceSensor1, EX_LOW_DISTANCE) )
+          if (HAVE_COLLISION(distanceSensorLeft, EX_LOW_DISTANCE) )
           {
             direction = DIR_2;
             turn = TURN_COLLISION + (isturnback ? TURN_STEP : 0);
             isturnback = false;
           }
 
-          if (HAVE_COLLISION(distanceSensor2, EX_LOW_DISTANCE) )
+          if (HAVE_COLLISION(distanceSensorRight, EX_LOW_DISTANCE) )
           {
             direction = DIR_10;
             turn = TURN_COLLISION + (isturnback ? TURN_STEP : 0);
@@ -262,7 +255,7 @@ void loop()
       speedMT1 = MIN_SPEED;
       speedMT2 = MIN_SPEED;
 
-      if ((!HAVE_COLLISION(distanceSensor3, LOW_DISTANCE)) && changeDirectionStep == 0)
+      if ((!HAVE_COLLISION(distanceSensorCenter, LOW_DISTANCE)) && changeDirectionStep == 0)
       {
         isturnback = true;
         changeDirectionStep = 0;
@@ -294,7 +287,7 @@ void loop()
       speedMT2 = MID_SPEED;
 
       changeDirectionStep++;
-      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensor3, MED_DISTANCE)))
+      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, MED_DISTANCE)))
       {
         Serial.println();
         Serial.print("___________________ DIR_2");
@@ -328,7 +321,7 @@ void loop()
       speedMT2 = MID_SPEED;
 
       changeDirectionStep++;
-      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensor3, MED_DISTANCE)))
+      if (changeDirectionStep >= turn || (!HAVE_COLLISION(distanceSensorCenter, MED_DISTANCE)))
       {
         Serial.println();
         Serial.print("___________________ DIR_10");
@@ -372,33 +365,15 @@ void loop()
   }
 
   if (isfollowall)
-    speedBalance(speedMT1, speedMT2, distanceSensor1, distanceSensor2, isfollowright ? 19 : -19);
+    speedBalance(speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight, isfollowright ? 19 : -19);
   else
-    speedBalance(speedMT1, speedMT2, distanceSensor1, distanceSensor2, 0);
+    speedBalance(speedMT1, speedMT2, distanceSensorLeft, distanceSensorRight, 0);
 
   RunCar(direction, speedMT1, speedMT2);
 
 
-  //Serial.print("isturnback: ");
-  //Serial.print(isturnback);
-
-  String temp = "ML:";
-  temp += speedMT1;
-  temp += " :";
-  temp += "MR:";
-  temp += speedMT2;
-  temp += ": ";
-  temp += "SSL:";
-  temp += distanceSensor1;
-  temp += ": ";
-  temp += "SSR:";
-  temp += distanceSensor2;
-  temp += ": ";
-  temp += "SSH:";
-  temp += distanceSensor3;
-  temp += ": ";
-  temp += direction;
-  blueDevice.SentToBluetoothDevice(temp);
+  Serial.print("isturnback: ");
+  Serial.print(isturnback);
 
   timer++;
   if (timer == 10000) timer = 0;
@@ -483,35 +458,35 @@ void speedBalance(int &speed1, int &speed2, long distance1, long distance2, long
   }
 }
 
-void SetupSpeedSensor()
-{
-  pinMode(SS_D0_PIN, INPUT_PULLUP);
-  pinMode(SS_D1_PIN, INPUT_PULLUP);
+//void SetupSpeedSensor()
+//{
+//  pinMode(SS_D0_PIN, INPUT_PULLUP);
+//  pinMode(SS_D1_PIN, INPUT_PULLUP);
+//
+//  attachInterrupt(digitalPinToInterrupt(SS_D0_PIN), SpeedSensor1, RISING );
+//  attachInterrupt(digitalPinToInterrupt(SS_D1_PIN), SpeedSensor2, RISING );
+//
+//  speedSensor1 = 0;
+//  speedSensor2 = 0;
+//}
 
-  attachInterrupt(digitalPinToInterrupt(SS_D0_PIN), SpeedSensor1, RISING );
-  attachInterrupt(digitalPinToInterrupt(SS_D1_PIN), SpeedSensor2, RISING );
-
-  speedSensor1 = 0;
-  speedSensor2 = 0;
-}
-
-void SpeedSensor1()
-{
-  speedSensor1++;
-}
-
-void SpeedSensor2()
-{
-  speedSensor2++;
-}
+//void SpeedSensor1()
+//{
+//  speedSensor1++;
+//}
+//
+//void SpeedSensor2()
+//{
+//  speedSensor2++;
+//}
 
 void RunMotor(int dir, int speed, int En, int In1, int In2)
 {
   if (dir == 0)
   {
     // turn on motor A
-    digitalWrite(In1, HIGH);
-    digitalWrite(In2, LOW);
+    digitalWrite(In1, LOW);
+    digitalWrite(In2, HIGH);
 
     // set speed to 200 out of possible range 0~255
     analogWrite(En, speed);
@@ -519,8 +494,8 @@ void RunMotor(int dir, int speed, int En, int In1, int In2)
   else if (dir == 1)
   {
     // turn on motor A
-    digitalWrite(In1, LOW);
-    digitalWrite(In2, HIGH);
+    digitalWrite(In1, HIGH);
+    digitalWrite(In2, LOW);
 
     // set speed to 200 out of possible range 0~255
     analogWrite(En, speed);
@@ -548,9 +523,9 @@ void SetupMotor()
 
 void SetupDistanceSensor()
 {
-  distanceSensor1 = 0;
-  distanceSensor2 = 0;
-  distanceSensor3 = 0;
+  distanceSensorLeft = 0;
+  distanceSensorRight = 0;
+  distanceSensorCenter = 0;
 }
 
 long GetDistanceForSensorUltraonic(int TRIGGER_PIN, int ECHO_PIN)
