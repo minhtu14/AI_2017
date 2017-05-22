@@ -1,13 +1,6 @@
 #include "SharpIR.h"
 #include "BluetoothDevice.h"
 #include <SoftwareSerial.h>
-//Distance Sensor Left
-#define DS_TRIGGER_1_PIN   4
-#define DS_ECHO_1_PIN   5
-
-//Distance Sensor Right
-#define DS_TRIGGER_2_PIN  12
-#define DS_ECHO_2_PIN     13
 
 //Distance Sensor Sharp IR Left
 #define   IR_PIN_LEFT     A0
@@ -33,16 +26,11 @@
 #define MOT_IN_3_PIN    10
 #define MOT_IN_4_PIN    11
 
-
-//Speed Sensor
-#define SS_D0_PIN       2
-#define SS_D1_PIN       3
-
 //Speed limit
 #define MAX_SPEED         200
-#define MID_SPEED         150
-#define LOW_SPEED         110
-#define MIN_SPEED         80
+#define MID_SPEED         160
+#define LOW_SPEED         130
+#define MIN_SPEED         100
 
 //Collision Distance
 #define EX_LOW_DISTANCE   10
@@ -66,12 +54,7 @@
 #define MOVE_BACK_STEP    8
 
 //Loop step
-#define TIME_STEP     50
-
-//LED
-#define LED_1_PIN     13
-#define LED_2_PIN     12
-#define LED_3_PIN     A5
+#define TIME_STEP     0
 
 //Macro
 #define HAVE_COLLISION(x, d)  (x < d)
@@ -110,9 +93,6 @@ void setup()
 
   //Setup speed sensor
   //SetupSpeedSensor();
-
-  //Setup debug LED
-  SetupLED();
 
   // Setup Debug With Bluetooth.
   blueDevice.SetPinBLT(BLT_RX_PIN, BLT_TX_PIN);
@@ -404,12 +384,6 @@ void loop()
   delay(TIME_STEP);
 }
 
-void SetupLED()
-{
-  pinMode(LED_1_PIN, OUTPUT);
-  pinMode(LED_2_PIN, OUTPUT);
-  pinMode(LED_3_PIN, OUTPUT);
-}
 
 void TurnLED(int pin, int mode)
 {
@@ -479,6 +453,16 @@ void speedBalance(int &speed1, int &speed2, long distance1, long distance2, long
       speed2 = speed2 * (1 + ratio);
     else
       speed1 = speed1 * (1 - ratio);
+  }
+
+  if (speed1 < MIN_SPEED)
+  {
+    speed1 = MIN_SPEED;
+  }
+  
+  if (speed2 < MIN_SPEED)
+  {
+    speed2 = MIN_SPEED;
   }
 }
 
