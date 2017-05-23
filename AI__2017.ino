@@ -27,10 +27,10 @@
 #define MOT_IN_4_PIN    11
 
 //Speed limit
-#define MAX_SPEED         200
-#define MID_SPEED         160
-#define LOW_SPEED         130
-#define MIN_SPEED         100
+#define MAX_SPEED         230
+#define MID_SPEED         200
+#define LOW_SPEED         180
+#define MIN_SPEED         150
 
 //Collision Distance
 #define EX_LOW_DISTANCE   10
@@ -49,8 +49,8 @@
 #define STOP        -1
 
 //Change Direction Step
-#define TURN_COLLISION    3
-#define TURN_STEP         6
+#define TURN_COLLISION    2
+#define TURN_STEP         4
 #define MOVE_BACK_STEP    8
 
 //Loop step
@@ -60,7 +60,7 @@
 #define HAVE_COLLISION(x, d)  (x < d)
 
 //Balance
-#define BALANCE_RATIO 0.15
+#define BALANCE_RATIO 0.1
 #define DISTANCE_MAX 500
 int distanceSensorLeft, distanceSensorRight, distanceSensorCenter, speedSensorLeft, speedSensorRight;
 
@@ -130,20 +130,20 @@ void loop()
   if (distanceSensorCenter == 0)
     distanceSensorCenter = DISTANCE_MAX;
 
-  if (timer % 3 == 0)
-  {
-    Serial.print("ChangeDirectionStep: ");
-    Serial.print(changeDirectionStep);
-    Serial.print(" - Dir: ");
-    Serial.print(direction);
-    Serial.print(" - DS1: ");
-    Serial.print(distanceSensorLeft);
-    Serial.print(" - DS2: ");
-    Serial.print(distanceSensorRight);
-    Serial.print(" - DS3: ");
-    Serial.print(distanceSensorCenter);
-    Serial.println();
-  }
+//  if (timer % 3 == 0)
+//  {
+//    Serial.print("ChangeDirectionStep: ");
+//    Serial.print(changeDirectionStep);
+//    Serial.print(" - Dir: ");
+//    Serial.print(direction);
+//    Serial.print(" - DS1: ");
+//    Serial.print(distanceSensorLeft);
+//    Serial.print(" - DS2: ");
+//    Serial.print(distanceSensorRight);
+//    Serial.print(" - DS3: ");
+//    Serial.print(distanceSensorCenter);
+//    Serial.println();
+//  }
 
   switch (direction)
   {
@@ -199,12 +199,12 @@ void loop()
 
         if (isfollowall)
         {
-          int sensorCheck = isfollowright ? distanceSensorRight : distanceSensorLeft;
+          int sensorCheck = isfollowright ? distanceSensorRight : distanceSensorLeft; 
 
           if (sensorCheck > 32)
           {
             direction = isfollowright ? DIR_2 : DIR_10;
-            turn = TURN_COLLISION + ((sensorCheck > 60) ? TURN_STEP : 0);
+            turn = TURN_COLLISION + ((sensorCheck > MED_DISTANCE) ? TURN_STEP : 0);
             if (oldturn + turn > 5)
               turn = 5 - oldturn;
             isturnback = false;
