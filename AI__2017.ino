@@ -36,7 +36,7 @@
 #define EX_LOW_DISTANCE   10
 #define LOWER_DISTANCE      18
 #define LOW_DISTANCE    20
-#define MED_DISTANCE    60
+#define MED_DISTANCE    70
 #define HIGH_DISTANCE     100
 
 //Direction
@@ -49,8 +49,8 @@
 #define STOP        -1
 
 //Change Direction Step
-#define TURN_COLLISION    1
-#define TURN_STEP         3
+#define TURN_COLLISION    3
+#define TURN_STEP         6
 #define MOVE_BACK_STEP    8
 
 //Loop step
@@ -406,24 +406,24 @@ void RunCar(int dir, int speedM1, int speedM2)
   }
   if (dir == DIR_2)
   {
-    RunMotor(-1, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
-    RunMotor(1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
-  }
-  if (dir == DIR_10)
-  {
     RunMotor(1, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
     RunMotor(-1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
   }
-  if (dir == DIR_4)
+  if (dir == DIR_10)
   {
     RunMotor(-1, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
-    RunMotor(0, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+    RunMotor(1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
   }
-  if (dir == DIR_8)
-  {
-    RunMotor(0, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
-    RunMotor(-1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
-  }
+//  if (dir == DIR_4)
+//  {
+//    RunMotor(-1, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
+//    RunMotor(0, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+//  }
+//  if (dir == DIR_8)
+//  {
+//    RunMotor(0, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
+//    RunMotor(-1, speedM2, MOT_ENABLE_2_PIN, MOT_IN_3_PIN, MOT_IN_4_PIN);
+//  }
   if (dir == DIR_6)
   {
     RunMotor(0, speedM1, MOT_ENABLE_1_PIN, MOT_IN_1_PIN, MOT_IN_2_PIN);
