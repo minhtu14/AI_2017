@@ -170,13 +170,13 @@ void loop()
           if (distanceSensorLeft > distanceSensorRight)
           {
             direction = DIR_10;
-            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorRight < LOWER_DISTANCE) ? TURN_COLLISION : 0);
+            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorRight < LOW_DISTANCE) ? TURN_COLLISION : 0);
             isturnback = false;
           }
           else
           {
             direction = DIR_2;
-            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorLeft < LOWER_DISTANCE) ? TURN_COLLISION : 0);
+            turn = TURN_STEP + (isturnback ? TURN_STEP : (distanceSensorLeft < LOW_DISTANCE) ? TURN_COLLISION : 0);
             isturnback = false;
           }
         }
@@ -201,7 +201,7 @@ void loop()
         {
           int sensorCheck = isfollowright ? distanceSensorRight : distanceSensorLeft; 
 
-          if (sensorCheck > 32)
+          if (sensorCheck > 70)
           {
             direction = isfollowright ? DIR_2 : DIR_10;
             turn = TURN_COLLISION + ((sensorCheck > MED_DISTANCE) ? TURN_STEP : 0);
