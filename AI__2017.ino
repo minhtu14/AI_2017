@@ -27,8 +27,8 @@
 #define MOT_IN_4_PIN    11
 
 //Speed limit
-#define MAX_SPEED         230
-#define MID_SPEED         200
+#define MAX_SPEED         255
+#define MID_SPEED         180
 #define LOW_SPEED         180
 #define MIN_SPEED         150
 
@@ -210,7 +210,7 @@ void loop()
             isturnback = false;
           }
 
-          if (sensorCheck < 12)
+          if (sensorCheck < 20)
           {
             direction = isfollowright ? DIR_10 : DIR_2;
             turn = TURN_COLLISION;
